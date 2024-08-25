@@ -2,10 +2,8 @@ const http = require('http');
 const express = require('express');
 const app = express();
 
-
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
+require('./startup/db')();
+require('./startup/routes')(app);
 
 const server = http.createServer(app);
 
