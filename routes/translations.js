@@ -37,7 +37,7 @@ router.put('/resources/:resourceId/translations/:id', async (req, res) => {
 
     resource.translations[translationIndex].value = req.body.value;
 
-    await resource.save();
+    await Resource.updateOne({ _id: req.params.resourceId }, { $set: { translations: resource.translations } });
 
     res.send(resource);
 });
@@ -51,7 +51,8 @@ router.delete('/resources/:resourceId/translations/:id', async (req, res) => {
     if (translationIndex === -1) return res.status(404).send('The translation with the given ID was not found.');
 
     resource.translations.splice(translationIndex, 1);
-    await resource.save();
+
+    await Resource.updateOne({ _id: req.params.resourceId }, { $set: { translations: resource.translations } });
 
     res.send(resource);
 });

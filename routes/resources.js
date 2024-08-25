@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
 
 
     let translation = new Translation({
-        locale: req.body.defaultLocale,
+        locale: 'ES',
         value: req.body.value
     });
 

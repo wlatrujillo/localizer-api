@@ -9,11 +9,6 @@ const resourceSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    defaultLocale: {
-        type: String,
-        required: true,
-        trim: true
-    },
     link: {
         type: String,
         required: false
@@ -35,7 +30,6 @@ const Resource = mongoose.model('Resource', resourceSchema);
 function validateResource(resource) {
     const schema = new Joi.object({
         code: Joi.string().required(),
-        defaultLocale: Joi.string().required(),
         value: Joi.string().required(),
         link: Joi.string().optional(),
         tags: Joi.array().optional(),
