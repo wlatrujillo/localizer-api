@@ -5,13 +5,17 @@ const localeSchema = new mongoose.Schema({
         type: String,
         required: true,
         minlength: 5,
-        maxlength: 50
+        maxlength: 50,
+        unique: true,
+        trim: true
     },
     code: {
         type: String,
         required: true,
         minlength: 2,
-        maxlength: 5
+        maxlength: 5,
+        trim: true,
+        uppercase: true
     },
 });
 

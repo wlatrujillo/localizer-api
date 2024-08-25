@@ -15,16 +15,18 @@ router.post('/', async (req, res) => {
     const { error } = validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    let locale = new Locale({ name: req.body.name , code: req.body.code});
-    locale = await locale.save();
+    let locale = await Locale.findOne({ code: req.body.code });
+    if (locale) return res.status(409).send('Locale already registered.');
+
+    locale = new Locale({ name: req.body.name , code: req.body.code});
+    await locale.save();
+
     res.send(locale);
 });
 
 router.put('/:id', async (req, res) => {
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
 
-    const locale = await Locale.findByIdAndUpdate(req.params.id, { name: req.body.name, code: req.body.code}, { new : true });
+    const locale = await Locale.findByIdAndUpdate(req.params.id, { name: req.body.name}, { new : true });
 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
 
