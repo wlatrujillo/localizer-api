@@ -1,30 +1,36 @@
-const { Locale, validate } = require('../models/locale');
+const Joi = require('joi');
+const service = require('../services/locale.srv');
 
 
 const getLocales = async (req, res) => {
-    const locales = await Locale
-        .find()
-        .sort('name');
+    const locales = await service.getAllLocales();
     res.send(locales);
 }
 
 const createLocale = async (req, res) => {
 
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    try {
 
-    let locale = await Locale.findOne({ code: req.body.code });
-    if (locale) return res.status(409).send('Locale already registered.');
+        const { error } = validate(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
 
-    locale = new Locale({ name: req.body.name , code: req.body.code});
-    await locale.save();
+        const locale = await service.createLocale(req.body); 
 
-    res.send(locale);
+        res.send(locale);
+
+    } catch (error) {
+      console.log(error);
+      console.log(error.message);
+      console.log(error.code);
+
+      return res.status(error.code).send(error.message);
+         
+    }
 }
 
 const updateLocale = async (req, res) => {
 
-    const locale = await Locale.findByIdAndUpdate(req.params.id, { name: req.body.name}, { new : true });
+    const locale = await service.updateLocale(req.params.id, req.body);  
 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
 
@@ -33,7 +39,7 @@ const updateLocale = async (req, res) => {
 
 const deleteLocale = async (req, res) => {
 
-    const locale = await Locale.findByIdAndDelete(req.params.id);
+    const locale = await service.deleteLocale(req.params.id); 
 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
 
@@ -42,11 +48,19 @@ const deleteLocale = async (req, res) => {
 
 const getLocaleById = async (req, res) => {
 
-    const locale = await Locale.findById(req.params.id);
+    const locale = await service.getLocaleById(req.params.id); 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
     res.send(locale);
 }
 
+function validate(locale) {
+    const schema = Joi.object({
+        name: Joi.string().min(5).max(50).required(),
+        code: Joi.string().min(2).max(5).required()
+    });
+
+    return schema.validate(locale);
+}
 
 module.exports = {
     getLocales,
