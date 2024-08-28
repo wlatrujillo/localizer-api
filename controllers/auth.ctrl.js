@@ -2,9 +2,6 @@ const Joi = require('joi');
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
 const { User } = require('../models/user');
-const mongoose = require('mongoose');
-const express = require('express');
-const router = express.Router();
 
 const login = async (req, res) => {
 
@@ -36,12 +33,6 @@ const signup = async (req, res) => {
   const token = user.generateAuthToken();
   res.header('x-auth-token', token).send(_.pick(user, ['_id', 'email']));
 }
-
-router.post('/login', async (req, res) => {
-});
-
-router.post('/signup', async (req, res) => {
-});
 
 function validate(req) {
   const schema = new Joi.object({
