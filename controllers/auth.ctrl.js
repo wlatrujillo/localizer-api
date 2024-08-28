@@ -1,5 +1,4 @@
 const Joi = require('joi');
-const _ = require('lodash');
 const service = require('../services/auth.srv');
 
 const login = async (req, res) => {
@@ -15,9 +14,8 @@ const login = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(error.code).send(error.message);
+        res.status(error.code?error.code:500).send(error.message);
     }
-
   
 }
 
@@ -30,11 +28,11 @@ const signup = async (req, res) => {
 
         const user = await service.signup(req.body);
 
-        res.header('x-auth-token', user.token).send(_.pick(user.data, ['_id', 'email']));
+        res.header('x-auth-token', user.token).send(user.data);
 
     } catch (error) {
         console.error(error);
-        res.status(error.code).send(error.message);
+        res.status(error.code?error.code:500).send(error.message);
     }
 }
 

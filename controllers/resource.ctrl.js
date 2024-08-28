@@ -1,45 +1,37 @@
-const { Resource, validate } = require('../models/resource');
-const { Translation } = require('../models/translation');
+const Joi = require('joi');
+const service = require('../services/resource.srv');
 
 const getAllResources = async (req, res) => {
 
-    const resources = await Resource
-        .find();
+    const resources = await service.getAllResources();
     res.send(resources);
 }
 
 const createResource = async (req, res) => {
 
-    const { error } = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    try {
 
-    let resource = await Resource.findOne({ code: req.body.code });
-    if (resource) return res.status(409).send('Resource already registered.');
+        console.log('Validating resource...', req.body);
+
+        const { error } = validate(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
 
 
-    let translation = new Translation({
-        locale: 'ES',
-        value: req.body.value
-    });
+        console.log('Creating resource...', req.body);
+        const resource = await service.createResource(req.body); 
 
-    let translations = [];
-    translations.push(translation);
-    
+        res.send(resource);
 
-    resource = new Resource({ 
-        code: req.body.code, 
-        defaultLocale: req.body.defaultLocale,
-        translations: translations 
-    });
+    } catch (error) {
+        console.error('Error creating resource', error);
 
-    await resource.save();
-
-    res.send(resource);
+        res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
 const updateResource = async (req, res) => {
 
-    const resource = await Resource.findByIdAndUpdate(req.params.id, { code: req.body.code, defaultLocale: req.body.defaultLocale }, { new : true });
+    const resource = await service.updateResource(req.params.id, req.body);
 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
 
@@ -48,7 +40,7 @@ const updateResource = async (req, res) => {
 
 const deleteResource = async (req, res) => {
 
-    const resource = await Resource.findByIdAndDelete(req.params.id);
+    const resource = await service.deleteResource(req.params.id); 
 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
 
@@ -57,12 +49,23 @@ const deleteResource = async (req, res) => {
 
 const getResourceById = async (req, res) => {
 
-    const resource = await Resource.findById(req.params.id);
+    const resource = await service.getResourceById(req.params.id); 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
     res.send(resource);
 }
 
 
+function validate(resource) {
+    const schema = new Joi.object({
+        code: Joi.string().required(),
+        value: Joi.string().required(),
+        link: Joi.string().optional(),
+        tags: Joi.array().optional(),
+        translations: Joi.array().optional()
+    });
+
+    return schema.validate(resource);
+}
 module.exports = {
     getAllResources,
     createResource,

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Joi = require('joi');
 
 const translationSchema = new mongoose.Schema({
     locale: {
@@ -21,15 +20,5 @@ const translationSchema = new mongoose.Schema({
 
 const Translation = mongoose.model('Translation', translationSchema);
 
-function validateTranslation(locale) {
-    const schema = Joi.object({
-        locale: Joi.string().min(2).max(5).required(),
-        value: Joi.string().min(1).max(1024).required()
-    });
-
-    return schema.validate(locale);
-}
-
 exports.Translation = Translation  
 exports.translationSchema = translationSchema;
-exports.validate = validateTranslation;

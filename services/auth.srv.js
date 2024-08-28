@@ -4,15 +4,11 @@ const ServiceException = require('../exceptions/service.exception');
 
 const login = async (user) => {
 
-    console.log('User logging in: ', user.email);
-
     let userResource = await User.findOne({ email: user.email });
     if (!userResource) throw new ServiceException('Invalid email or password.', 400);
 
     const validPassword = await bcrypt.compare(user.password, userResource.password);
     if (!validPassword) throw new ServiceException('Invalid email or password.', 400);
-
-    console.log('User logged in: ', userResource.email)
 
     const token = userResource.generateAuthToken();
 
@@ -34,7 +30,7 @@ const signup = async (user) => {
 
     const token = userResource.generateAuthToken();
 
-    return { token, data: userResource };
+    return { token, data: {email: userResource.email, _id: userResource._id} };
     
 }
 

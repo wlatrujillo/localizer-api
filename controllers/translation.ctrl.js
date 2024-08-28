@@ -1,65 +1,63 @@
-const { Resource, validate } = require('../models/resource');
-const { Translation } = require('../models/translation');
+const Joi = require('joi');
+const service = require('../services/translation.srv');
 
 const getAll = async (req, res) => {
-    const translations = await Resource.findById(req.params.resourceId).select('translations');
+    const translations = await service.getAll(req.params.resourceId); 
     res.send(translations);
 }
 
 const create = async (req, res) => {
 
-    let resource = await Resource.findById(req.params.resourceId);
-    if (!resource) return res.status(404).send('Resource with the given id not found.');
-
-    let translation = new Translation({
-        locale: req.body.locale,
-        value: req.body.value
-    });
-
-    resource.translations.push(translation);
-
-    await resource.save();
-
-    res.send(resource);
+    try {
+        const resource = await service.create(req.params.resourceId, req.body); 
+        res.send(resource);
+    } catch (error) {
+        console.error(error);
+        res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
 const update = async (req, res) => {
 
-    const resource = await Resource.findById(req.params.resourceId);
-    if (!resource) return res.status(404).send('The resource with the given ID was not found.');
-
-    const translationIndex = resource.translations.findIndex(t => t._id == req.params.id);
-    if (translationIndex === -1) return res.status(404).send('The translation with the given ID was not found.');
-
-    resource.translations[translationIndex].value = req.body.value;
-
-    await Resource.updateOne({ _id: req.params.resourceId }, { $set: { translations: resource.translations } });
-
-    res.send(resource);
+    try {
+        const resource = await service.update(req.params.resourceId, req.params.id, req.body); 
+        res.send(resource);
+    } catch (error) {
+        console.error(error);
+        res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
 const remove = async (req, res) => {
 
-    const resource = await Resource.findById(req.params.resourceId);
-    if (!resource) return res.status(404).send('The resource with the given ID was not found.');
-
-    const translationIndex = resource.translations.findIndex(t => t._id == req.params.id);
-    if (translationIndex === -1) return res.status(404).send('The translation with the given ID was not found.');
-
-    resource.translations.splice(translationIndex, 1);
-
-    await Resource.updateOne({ _id: req.params.resourceId }, { $set: { translations: resource.translations } });
-
-    res.send(resource);
+    try {
+        const resource = await service.remove(req.params.resourceId, req.params.id); 
+        res.send(resource);
+    } catch (error) {
+        console.error(error);
+        res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
 const getById = async (req, res) => {
 
-    const resource = await Resource.findById(req.params.resourceId).select('translations');
-    if (!resource ) return res.status(404).send('The resource with the given ID was not found.');
-    res.send(resource.translations.find(t => t._id == req.params.id));
+    try {
+        const translation = await service.getById(req.params.resourceId, req.params.id);
+        res.send(translation);
+    } catch (error) {
+        console.error(error);
+        res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
+function validate(translation) {
+    const schema = Joi.object({
+        locale: Joi.string().min(2).max(5).required(),
+        value: Joi.string().min(1).max(1024).required()
+    });
+
+    return schema.validate(translation);
+}
 module.exports = {
     getAll,
     create,

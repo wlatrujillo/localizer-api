@@ -19,11 +19,8 @@ const createLocale = async (req, res) => {
         res.send(locale);
 
     } catch (error) {
-      console.log(error);
-      console.log(error.message);
-      console.log(error.code);
-
-      return res.status(error.code).send(error.message);
+        console.log(error);
+      return res.status(error.code?error.code:500).send(error.message);
          
     }
 }

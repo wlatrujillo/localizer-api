@@ -1,9 +1,12 @@
-const {User, validate} = require('../models/user');
-
+const service = require('../services/user.srv');
 
 const getMe = async (req, res) => {
-  const user = await User.findById(req.user._id).select('-password');
-  res.send(user);
+
+    console.log('req.user', req.user);
+    const user = await service.getMeById(req.user._id); 
+    if(!user) return res.status(404).send('User not found');
+
+    res.send(user);
 };
 
 module.exports = {
