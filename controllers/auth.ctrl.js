@@ -1,37 +1,41 @@
 const Joi = require('joi');
-const bcrypt = require('bcrypt');
 const _ = require('lodash');
-const { User } = require('../models/user');
+const service = require('../services/auth.srv');
 
 const login = async (req, res) => {
 
-  const { error } = validate(req.body); 
-  if (error) return res.status(400).send(error.details[0].message);
+    try {
 
-  let user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send('Invalid email or password.');
+        const { error } = validate(req.body);
+        if (error) return res.status(400).send(error.details[0].message);
 
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validPassword) return res.status(400).send('Invalid email or password.');
+        const token = await service.login(req.body);
 
-  const token = user.generateAuthToken();
-  res.send(token);
+        res.send(token);
+
+    } catch (error) {
+        console.error(error);
+        res.status(error.code).send(error.message);
+    }
+
+  
 }
 
 const signup = async (req, res) => {
-  const { error } = validate(req.body); 
-  if (error) return res.status(400).send(error.details[0].message);
 
-  let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send('User already registered.');
+    try {
 
-  user = new User(_.pick(req.body, ['firstName', 'lastName', 'email', 'password']));
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-  await user.save();
+        const { error } = validate(req.body); 
+        if (error) return res.status(400).send(error.details[0].message);
 
-  const token = user.generateAuthToken();
-  res.header('x-auth-token', token).send(_.pick(user, ['_id', 'email']));
+        const user = await service.signup(req.body);
+
+        res.header('x-auth-token', user.token).send(_.pick(user.data, ['_id', 'email']));
+
+    } catch (error) {
+        console.error(error);
+        res.status(error.code).send(error.message);
+    }
 }
 
 function validate(req) {
