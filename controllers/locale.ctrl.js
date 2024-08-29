@@ -1,9 +1,9 @@
 const Joi = require('joi');
-const service = require('../services/locale.srv');
+const localeService = require('../dynamodb/locale.srv');
 
 
 const getLocales = async (req, res) => {
-    const locales = await service.getAllLocales();
+    const locales = await localeService.getAllLocales();
     res.send(locales);
 }
 
@@ -14,7 +14,7 @@ const createLocale = async (req, res) => {
         const { error } = validate(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
-        const locale = await service.createLocale(req.body); 
+        const locale = await localeService.createLocale(req.body); 
 
         res.send(locale);
 
@@ -27,16 +27,21 @@ const createLocale = async (req, res) => {
 
 const updateLocale = async (req, res) => {
 
-    const locale = await service.updateLocale(req.params.id, req.body);  
+    try {
+        const locale = await localeService.updateLocale(req.params.id, req.body);  
 
-    if (!locale) return res.status(404).send('The locale with the given ID was not found.');
+        if (!locale) return res.status(404).send('The locale with the given ID was not found.');
 
-    res.send(locale );
+        res.send(locale );
+    } catch (error) {
+        console.log(error);
+        return res.status(error.code?error.code:500).send(error.message);
+    }
 }
 
 const deleteLocale = async (req, res) => {
 
-    const locale = await service.deleteLocale(req.params.id); 
+    const locale = await localeService.deleteLocale(req.params.id); 
 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
 
@@ -45,7 +50,7 @@ const deleteLocale = async (req, res) => {
 
 const getLocaleById = async (req, res) => {
 
-    const locale = await service.getLocaleById(req.params.id); 
+    const locale = await localeService.getLocaleById(req.params.id); 
     if (!locale) return res.status(404).send('The locale with the given ID was not found.');
     res.send(locale);
 }
