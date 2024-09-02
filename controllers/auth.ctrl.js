@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const service = require('../services/auth.srv');
+const service = require('../dynamodb/auth.srv');
 
 const login = async (req, res) => {
 
