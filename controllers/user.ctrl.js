@@ -1,4 +1,4 @@
-const service = require('../services/user.srv');
+const service = require('../dynamodb/user.srv');
 
 const getMe = async (req, res) => {
 

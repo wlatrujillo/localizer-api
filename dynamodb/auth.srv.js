@@ -18,7 +18,7 @@ const login = async (user) => {
 
     const input = {
         "ExpressionAttributeNames": {
-          "#ID": "id",
+          "#ID": "_id",
           "#EM": "email",
           "#FN": "firstName",
           "#LN": "LastName",
@@ -50,7 +50,9 @@ const login = async (user) => {
     if (!validPassword)
       throw new ServiceException("Invalid email or password.", 400);
 
-    const token = generateAuthToken(userResource.id.S, userResource.isAdmin.BOOL);
+    console.log(userResource);
+
+    const token = generateAuthToken(userResource._id.S, userResource.isAdmin.BOOL);
 
     return token;
 };
@@ -58,7 +60,7 @@ const login = async (user) => {
 const signup = async (user) => {
     const input = {
       "ExpressionAttributeNames": {
-        "#ID": "id",
+        "#ID": "_id",
         "#EM": "email",
         "#FN": "firstName",
         "#LN": "LastName",
@@ -80,10 +82,10 @@ const signup = async (user) => {
 
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(user.password, salt);
-    const id = uuidv4();
+    const _id = uuidv4();
 
     const Item = {
-        id: { S: id},
+        _id: { S: _id},
         email: { S: user.email },
         firstName: { S: user.firstName },
         lastName: { S: user.lastName },
@@ -100,14 +102,14 @@ const signup = async (user) => {
 
     const response = await client.send(putCommand);
 
-    const token = generateAuthToken(id, true);
+    const token = generateAuthToken(_id, true);
 
-    return { token, data: { email: userResource.email, id: userResource.id } };
+    return { token, data: { email: Item.email, _id: Item._id } };
 };
 
-function generateAuthToken({ id, isAdmin }) {
+function generateAuthToken( _id, isAdmin ) {
   const token = jwt.sign(
-    { id: id, isAdmin: isAdmin },
+    { _id, isAdmin },
     process.env.JWT_PRIVATE_KEY,
   );
   return token;

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const service = require('../services/resource.srv');
+const service = require('../dynamodb/resource.srv');
 
 const getAllResources = async (req, res) => {
 
