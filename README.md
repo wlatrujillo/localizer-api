@@ -39,6 +39,7 @@ Create a `.env` file in the root directory and add the following:
 PORT=3000
 MONGODB_URI=mongodb://localhost/localizer
 JWT_PRIVATE_KEY=ThePrivateKeyForSignJWT
+AWS_PROFILE=wladi.trujillo
 ```
 
 
