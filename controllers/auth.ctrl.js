@@ -26,9 +26,9 @@ const signup = async (req, res) => {
         const { error } = validate(req.body); 
         if (error) return res.status(400).send(error.details[0].message);
 
-        const user = await service.signup(req.body);
+        const response = await service.signup(req.body);
 
-        res.header('x-auth-token', user.token).send(user.data);
+        res.header('x-auth-token', response.token).send(response.data);
 
     } catch (error) {
         console.error(error);

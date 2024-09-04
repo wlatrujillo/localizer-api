@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const attr = require('dynamodb-data-types').AttributeValue;
 const {
   DynamoDBClient,
   PutItemCommand,
@@ -29,7 +30,7 @@ const getMeById = async (userId) => {
   if (!response.Item)
     throw new ServiceException("User not found", 404);
 
-  return response.Item;
+  return attr.unwrap(response.Item);
 
 };
 

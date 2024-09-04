@@ -1,4 +1,5 @@
 const ServiceException = require('../exceptions/service.exception');
+const attr = require('dynamodb-data-types').AttributeValue;
 const {
   DynamoDBClient,
   QueryCommand,
@@ -26,7 +27,7 @@ const getAll = async (resourceId) => {
   });
 
   const response = await client.send(command);
-  return response.Item;
+  return attr.unwrap(response.Item);
 }
 
 const create = async (resourceId, { locale, value }) => {
@@ -189,7 +190,7 @@ const getById = async (resourceId, locale) => {
 
   if (!response.Item) throw new ServiceException('The resource with the given ID was not found.', 404);
 
-  const translation = response.Item.translations.L.find(t => t.M.locale.S == locale);
+  const translation = attr.unwrap(response.Item).translations.find(t => t.locale == locale);
   if (!translation) throw new ServiceException('The translation with the given ID was not found.', 404);
 
   return translation;

@@ -50,7 +50,6 @@ const login = async (user) => {
   if (!validPassword)
     throw new ServiceException("Invalid email or password.", 400);
 
-  console.log(userResource);
 
   const token = generateAuthToken(userResource._id.S, userResource.isAdmin.BOOL);
 

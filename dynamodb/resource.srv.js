@@ -1,4 +1,5 @@
 const ServiceException = require('../exceptions/service.exception');
+const attr = require('dynamodb-data-types').AttributeValue;
 const {
   DynamoDBClient,
   QueryCommand,
@@ -20,7 +21,7 @@ const getAllResources = async () => {
   });
 
   const response = await client.send(command);
-  return response.Items;
+  return response.Items.map((item) => attr.unwrap(item));
 
 }
 
@@ -46,27 +47,29 @@ const createResource = async ({ code, value }) => {
 
   // TODO: insert all translations
   const translation = {
-    M: {
-      locale: { S: "es" },
-      value: { S: value }
-    }
+      locale:  "es" ,
+      value:  value 
   };
 
   let translations = [];
   translations.push(translation);
 
+  const newResource = {
+    code:  code ,
+    translations:  translations 
+  };
+
+  console.log("New Resource:", attr.wrap(newResource));
+
   const command = new PutItemCommand({
-    TableName: "localizer-resources",
-    Item: {
-      code: { S: code },
-      translations: { L: translations }
-    },
+    TableName: TableName,
+    Item: attr.wrap(newResource), 
     ReturnValues: "ALL_OLD",
   });
 
   response = await client.send(command);
 
-  return command.input.Item;
+  return newResource;
 
 }
 
@@ -140,7 +143,7 @@ const getResourceById = async (id) => {
 
   let response = await client.send(getItemCommand);
 
-  return response.Item;
+  return attr.unwrap(response.Item);
 }
 
 
