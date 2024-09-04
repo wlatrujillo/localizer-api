@@ -2,7 +2,6 @@ const http = require('http');
 const express = require('express');
 const app = express();
 
-require('./startup/db')();
 require('./startup/routes')(app);
 
 const server = http.createServer(app);

@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const service = require('../services/translation.srv');
+const service = require('../dynamodb/translation.srv');
 
 const getAll = async (req, res) => {
     const translations = await service.getAll(req.params.resourceId); 
