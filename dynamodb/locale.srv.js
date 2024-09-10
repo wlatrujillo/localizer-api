@@ -1,3 +1,4 @@
+const attr = require("dynamodb-data-types").AttributeValue;
 const {
   DynamoDBClient,
   QueryCommand,
@@ -12,36 +13,34 @@ const client = new DynamoDBClient({ region: "us-east-1" });
 
 const ServiceException = require("../exceptions/service.exception");
 
+const TableName = "localizer-locales";
+
+const getItemCommand = function ({ code }) {
+  return new GetItemCommand({
+    Key: attr.wrap({ code: code }),
+    TableName: TableName,
+  });
+};
+
 const getAllLocales = async () => {
   const command = new ScanCommand({
-    TableName: "localizer-locales",
+    TableName: TableName,
   });
 
   const response = await client.send(command);
-  return response.Items;
+  return response.Items.map((item) => attr.unwrap(item));
 };
 
 const createLocale = async (locale) => {
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: locale.code,
-      },
-    },
-    TableName: "localizer-locales",
-  });
-
-  let response = await client.send(getItemCommand);
+  const get = getItemCommand({ code: locale.code });
+  let response = await client.send(get);
 
   if (response.Item)
     throw new ServiceException("Locale already registered.", 409);
 
   const command = new PutItemCommand({
-    TableName: "localizer-locales",
-    Item: {
-      code: { S: locale.code },
-      name: { S: locale.name },
-    },
+    TableName: TableName,
+    Item: attr.wrap({ code: locale.code, name: locale.name }),
     ReturnValues: "ALL_OLD",
   });
 
@@ -51,26 +50,14 @@ const createLocale = async (locale) => {
 };
 
 const updateLocale = async (id, locale) => {
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
-    TableName: "localizer-locales",
-  });
-
-  let response = await client.send(getItemCommand);
+  const getCommand = getItemCommand({ code: id });
+  let response = await client.send(getCommand);
 
   if (!response.Item) throw new ServiceException("Locale not found.", 404);
 
   const command = new UpdateItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
-    TableName: "localizer-locales",
+    Key: attr.wrap({ code: id }),
+    TableName: TableName,
     UpdateExpression: "set #name = :name",
     ExpressionAttributeNames: {
       "#name": "name",
@@ -88,13 +75,9 @@ const updateLocale = async (id, locale) => {
 
 const deleteLocale = async (id) => {
   const command = new DeleteItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
+    Key: attr.wrap({ code: id }),
     ReturnValues: "ALL_OLD",
-    TableName: "localizer-locales",
+    TableName: TableName,
   });
   const response = await client.send(command);
 
@@ -102,18 +85,9 @@ const deleteLocale = async (id) => {
 };
 
 const getLocaleById = async (id) => {
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
-    TableName: "localizer-locales",
-  });
-
-  let response = await client.send(getItemCommand);
-
-  return response.Item;
+  const command = getItemCommand({ code: id });
+  let response = await client.send(command);
+  return attr.unwrap(response.Item);
 };
 
 module.exports = {

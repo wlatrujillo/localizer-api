@@ -10,6 +10,8 @@ const {
 
 const client = new DynamoDBClient({ region: "us-east-1" });
 
+const TableName = 'localizer-users';
+
 const getMeById = async (userId) => {
 
   const getItemCommand = new GetItemCommand({
@@ -18,7 +20,7 @@ const getMeById = async (userId) => {
         S: userId
       }
     },
-    TableName: 'localizer-users',
+    TableName: TableName,
     ExpressionAttributeNames: {
       "#ID": "_id"
     },
@@ -43,7 +45,7 @@ const updateMyPassword = async (userId, { password, newPassword }) => {
         S: userId
       }
     },
-    TableName: 'localizer-users',
+    TableName: TableName,
     ProjectionExpression: "password",
   });
 
@@ -65,7 +67,7 @@ const updateMyPassword = async (userId, { password, newPassword }) => {
         S: userId,
       },
     },
-    TableName: "localizer-users",
+    TableName: TableName,
     UpdateExpression: "set #password = :password",
     ExpressionAttributeNames: {
       "#password": "password",

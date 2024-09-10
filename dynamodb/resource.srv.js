@@ -1,5 +1,5 @@
-const ServiceException = require('../exceptions/service.exception');
-const attr = require('dynamodb-data-types').AttributeValue;
+const ServiceException = require("../exceptions/service.exception");
+const attr = require("dynamodb-data-types").AttributeValue;
 const {
   DynamoDBClient,
   QueryCommand,
@@ -10,10 +10,16 @@ const {
   UpdateItemCommand,
 } = require("@aws-sdk/client-dynamodb");
 
-
 const client = new DynamoDBClient({ region: "us-east-1" });
 
-const TableName = 'localizer-resources';
+const TableName = "localizer-resources";
+
+const getItemCommand = function (key) {
+  return new GetItemCommand({
+    Key: attr.wrap(key),
+    TableName: TableName,
+  });
+};
 
 const getAllResources = async () => {
   const command = new ScanCommand({
@@ -22,78 +28,46 @@ const getAllResources = async () => {
 
   const response = await client.send(command);
   return response.Items.map((item) => attr.unwrap(item));
-
-}
+};
 
 const createResource = async ({ code, value }) => {
-
-
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: code
-      }
-    },
-    TableName: TableName
-  });
-
-  let response = await client.send(getItemCommand);
-
-  console.log("Resource:", response);
-
-  if (response.Item)
-    throw new ServiceException("Resource already exists", 409);
-
+  const getCommand = getItemCommand({ code: code });
+  let response = await client.send(getCommand);
+  if (response.Item) throw new ServiceException("Resource already exists", 409);
 
   // TODO: insert all translations
   const translation = {
-      locale:  "es" ,
-      value:  value 
+    locale: "es",
+    value: value,
   };
 
   let translations = [];
   translations.push(translation);
 
   const newResource = {
-    code:  code ,
-    translations:  translations 
+    code: code,
+    translations: translations,
   };
-
-  console.log("New Resource:", attr.wrap(newResource));
 
   const command = new PutItemCommand({
     TableName: TableName,
-    Item: attr.wrap(newResource), 
+    Item: attr.wrap(newResource),
     ReturnValues: "ALL_OLD",
   });
 
   response = await client.send(command);
 
   return newResource;
-
-}
+};
 
 const updateResource = async (id, { code }) => {
-
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
-    TableName: TableName,
-  });
-
-  let response = await client.send(getItemCommand);
+  const getCommand = getItemCommand({ code: id });
+  let response = await client.send(getCommand);
 
   if (!response.Item) throw new ServiceException("Resource not found.", 404);
 
   const command = new UpdateItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
+    Key: attr.wrap({ code: id }),
     TableName: TableName,
     UpdateExpression: "set #code= :code",
     ExpressionAttributeNames: {
@@ -108,17 +82,11 @@ const updateResource = async (id, { code }) => {
   response = await client.send(command);
 
   return response.Attributes;
-
-}
+};
 
 const deleteResource = async (id) => {
-
   const command = new DeleteItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
+    Key: attr.wrap({ code: id }),
     ReturnValues: "ALL_OLD",
     TableName: TableName,
   });
@@ -126,31 +94,18 @@ const deleteResource = async (id) => {
   const response = await client.send(command);
 
   return response.Attributes;
-
-
-}
+};
 
 const getResourceById = async (id) => {
-
-  const getItemCommand = new GetItemCommand({
-    Key: {
-      code: {
-        S: id,
-      },
-    },
-    TableName: TableName,
-  });
-
-  let response = await client.send(getItemCommand);
-
+  const getCommand = getItemCommand({ code: id });
+  let response = await client.send(getCommand);
   return attr.unwrap(response.Item);
-}
-
+};
 
 module.exports = {
   getAllResources,
   createResource,
   updateResource,
   deleteResource,
-  getResourceById
+  getResourceById,
 };
