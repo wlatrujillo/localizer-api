@@ -20,8 +20,8 @@ const createLocale = async (req, res) => {
 
     } catch (error) {
         console.log(error);
-      return res.status(error.code?error.code:500).send(error.message);
-         
+        return res.status(error.code?error.code:500).send(error.message);
+
     }
 }
 

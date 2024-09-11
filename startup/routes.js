@@ -5,6 +5,7 @@ const users = require('../routes/users');
 const locales = require('../routes/locales');
 const resources = require('../routes/resources');
 const translations = require('../routes/translations');
+const projects = require('../routes/projects');
 
 module.exports = function(app) {
 
@@ -13,6 +14,7 @@ module.exports = function(app) {
     app.use('/api/users', auth, users);
     app.use('/api/locales', auth, locales);
     app.use('/api/resources',auth, resources);
+    app.use('/api/projects',auth, projects);
     app.use('/api',auth, translations);
 
 }

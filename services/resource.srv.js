@@ -24,7 +24,7 @@ const createResource = async ({code, value}) => {
 
     let translations = [];
     translations.push(translation);
-    
+
     resource = new Resource({ 
         code: code, 
         translations: translations 

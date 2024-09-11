@@ -16,7 +16,7 @@ const login = async (req, res) => {
         console.error(error);
         res.status(error.code?error.code:500).send(error.message);
     }
-  
+
 }
 
 const signup = async (req, res) => {
@@ -37,14 +37,14 @@ const signup = async (req, res) => {
 }
 
 function validate(req) {
-  const schema = new Joi.object({
-    firstName: Joi.string().min(2).max(100),
-    lastName: Joi.string().min(3).max(100),
-    email: Joi.string().min(5).max(255).required().email(),
-    password: Joi.string().min(5).max(500).required()
-  });
+    const schema = new Joi.object({
+        firstName: Joi.string().min(2).max(100),
+        lastName: Joi.string().min(3).max(100),
+        email: Joi.string().min(5).max(255).required().email(),
+        password: Joi.string().min(5).max(500).required()
+    });
 
-  return schema.validate(req);
+    return schema.validate(req);
 }
 
 module.exports.login = login; 
