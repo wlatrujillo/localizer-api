@@ -2,15 +2,21 @@ const Joi = require('joi');
 const service = require('../dynamodb/auth.srv');
 
 const login = async (req, res) => {
+    console.log('login');
 
     try {
 
         const { error } = validate(req.body);
+        console.log('login ctrl validate error', error);
         if (error) return res.status(400).send(error.details[0].message);
 
+        console.log('login ctrl req.body', req.body);
         const token = await service.login(req.body);
 
+        console.log('login ctrl token from srv', token);
         res.send(token);
+
+        console.log('response sent');
 
     } catch (error) {
         console.error(error);
@@ -20,6 +26,7 @@ const login = async (req, res) => {
 }
 
 const signup = async (req, res) => {
+    console.log('signup');
 
     try {
 

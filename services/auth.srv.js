@@ -3,6 +3,7 @@ const { User } = require('../models/user');
 const ServiceException = require('../exceptions/service.exception');
 
 const login = async (user) => {
+    console.log('login srv', user);
 
     let userResource = await User.findOne({ email: user.email });
     if (!userResource) throw new ServiceException('Invalid email or password.', 400);
