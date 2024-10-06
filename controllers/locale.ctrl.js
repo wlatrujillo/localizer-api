@@ -7,47 +7,6 @@ const getLocales = async (req, res) => {
     res.send(locales);
 }
 
-const createLocale = async (req, res) => {
-
-    try {
-
-        const { error } = validate(req.body);
-        if (error) return res.status(400).send(error.details[0].message);
-
-        const locale = await localeService.createLocale(req.body); 
-
-        res.send(locale);
-
-    } catch (error) {
-        console.log(error);
-        return res.status(error.code?error.code:500).send(error.message);
-
-    }
-}
-
-const updateLocale = async (req, res) => {
-
-    try {
-        const locale = await localeService.updateLocale(req.params.id, req.body);  
-
-        if (!locale) return res.status(404).send('The locale with the given ID was not found.');
-
-        res.send(locale );
-    } catch (error) {
-        console.log(error);
-        return res.status(error.code?error.code:500).send(error.message);
-    }
-}
-
-const deleteLocale = async (req, res) => {
-
-    const locale = await localeService.deleteLocale(req.params.id); 
-
-    if (!locale) return res.status(404).send('The locale with the given ID was not found.');
-
-    res.send(locale);
-}
-
 const getLocaleById = async (req, res) => {
 
     const locale = await localeService.getLocaleById(req.params.id); 
@@ -66,8 +25,5 @@ function validate(locale) {
 
 module.exports = {
     getLocales,
-    createLocale,
-    updateLocale,
-    deleteLocale,
     getLocaleById
 };

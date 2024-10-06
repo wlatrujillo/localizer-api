@@ -1,0 +1,54 @@
+[
+    {
+        "code": "en",
+        "name": "English"
+    },
+    {
+        "code": "es",
+        "name": "Spanish"
+    },
+    {
+        "code": "fr",
+        "name": "French"
+    },
+    {
+        "code": "de",
+        "name": "German"
+    },
+    {
+        "code": "es-ec",
+        "name": "Spanish (Ecuador)"
+    },
+    { 
+        "code": "es-mx",
+        "name": "Spanish (Mexico)"
+    },
+    { 
+        "code": "es-pa",
+        "name": "Spanish (Panama)"
+    },
+    { 
+        "code": "es-co",
+        "name": "Spanish (Colombia)"
+    },
+    { 
+        "code": "es-pe",
+        "name": "Spanish (Peru)"
+    },
+    { 
+        "code": "es-ar",
+        "name": "Spanish (Argentina)"
+    },
+    { 
+        "code": "es-cl",
+        "name": "Spanish (Chile)"
+    },
+    { 
+        "code": "en-us",
+        "name": "English (United States)"
+    },
+    { 
+        "code": "en-gb",
+        "name": "English (United Kingdom)"
+    }
+]
