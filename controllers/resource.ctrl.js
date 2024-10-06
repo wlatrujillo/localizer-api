@@ -3,7 +3,13 @@ const service = require('../dynamodb/resource.srv');
 
 const getAllResources = async (req, res) => {
 
-    const resources = await service.getAllResources();
+    const {projectId}  = req.params; 
+
+    if (!projectId) return res.status(400).send('ProjectId is required.');
+
+    console.log('Getting all resources...', req.query);
+
+    const resources = await service.getAllResources(projectId, req.query);
     res.send(resources);
 }
 
@@ -11,14 +17,15 @@ const createResource = async (req, res) => {
 
     try {
 
-        console.log('Validating resource...', req.body);
+        const {projectId}  = req.params; 
+
+        if (!projectId) return res.status(400).send('ProjectId is required.');
 
         const { error } = validate(req.body);
+
         if (error) return res.status(400).send(error.details[0].message);
 
-
-        console.log('Creating resource...', req.body);
-        const resource = await service.createResource(req.body); 
+        const resource = await service.createResource(projectId, req.body); 
 
         res.send(resource);
 

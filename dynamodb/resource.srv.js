@@ -21,17 +21,29 @@ const getItemCommand = function (key) {
     });
 };
 
-const getAllResources = async ({ page, pageSize, q }) => {
+const getAllResources = async (projectId, { page, pageSize, q }) => {
+
+    if (!projectId) throw new ServiceException("ProjectId is required", 400);
+
     const command = new ScanCommand({
-        TableName: TableName,
+        "ExpressionAttributeValues": {
+            ":projectId": {
+                "S": projectId
+            }
+        },
+        "FilterExpression": "projectId = :projectId",
+        "TableName": TableName,
     });
 
     const response = await client.send(command);
     return response.Items.map((item) => attr.unwrap(item));
 };
 
-const createResource = async ({ code, value }) => {
-    const getCommand = getItemCommand({ code: code });
+const createResource = async (projectId, { code, value }) => {
+    console.log("projectId", projectId);
+    console.log("code", code);
+    console.log("value", value);
+    const getCommand = getItemCommand({ projectId, code });
     let response = await client.send(getCommand);
     if (response.Item) throw new ServiceException("Resource already exists", 409);
 
@@ -45,6 +57,7 @@ const createResource = async ({ code, value }) => {
     translations.push(translation);
 
     const newResource = {
+        projectId: projectId,
         code: code,
         translations: translations,
     };
