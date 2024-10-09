@@ -38,7 +38,7 @@ const createResource = async (req, res) => {
 
 const updateResource = async (req, res) => {
 
-    const resource = await service.updateResource(req.params.id, req.body);
+    const resource = await service.updateResource(req.params.projectId, req.params.id, req.body);
 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
 
@@ -47,7 +47,7 @@ const updateResource = async (req, res) => {
 
 const deleteResource = async (req, res) => {
 
-    const resource = await service.deleteResource(req.params.id); 
+    const resource = await service.deleteResource(req.params.projectId, req.params.id); 
 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
 
@@ -56,7 +56,7 @@ const deleteResource = async (req, res) => {
 
 const getResourceById = async (req, res) => {
 
-    const resource = await service.getResourceById(req.params.id); 
+    const resource = await service.getResourceById(req.params.projectId, req.params.id); 
     if (!resource) return res.status(404).send('The resource with the given ID was not found.');
     res.send(resource);
 }

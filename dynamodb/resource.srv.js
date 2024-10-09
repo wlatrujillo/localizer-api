@@ -15,6 +15,7 @@ const client = new DynamoDBClient({ region: "us-east-1" });
 const TableName = "localizer-resources";
 
 const getItemCommand = function (key) {
+    console.log("key", key);
     return new GetItemCommand({
         Key: attr.wrap(key),
         TableName: TableName,
@@ -73,18 +74,27 @@ const createResource = async (projectId, { code, value }) => {
     return newResource;
 };
 
-const updateResource = async (id, { code }) => {
-    const getCommand = getItemCommand({ code: id });
+const updateResource = async (projectId, id, { code }) => {
+
+
+    const key = { projectId: projectId, code: id};
+
+    console.log("resource.srv.js - updateResource - key", key);
+
+    const getCommand = getItemCommand(key);
+
     let response = await client.send(getCommand);
 
     if (!response.Item) throw new ServiceException("Resource not found.", 404);
 
+    console.log("resource.srv.js - updateResource - response.Item", response?.Item);
+
     const command = new UpdateItemCommand({
-        Key: attr.wrap({ code: id }),
+        Key: attr.wrap(key),
         TableName: TableName,
-        UpdateExpression: "set #code= :code",
+        UpdateExpression: "set #c= :code",
         ExpressionAttributeNames: {
-            "#code": "code",
+            "#c": "code",
         },
         ExpressionAttributeValues: {
             ":code": { S: code },
@@ -92,14 +102,16 @@ const updateResource = async (id, { code }) => {
         ReturnValues: "ALL_NEW",
     });
 
+    console.log("resource.srv.js - updateResource - command", command);
+
     response = await client.send(command);
 
     return response.Attributes;
 };
 
-const deleteResource = async (id) => {
+const deleteResource = async (projectId, code) => {
     const command = new DeleteItemCommand({
-        Key: attr.wrap({ code: id }),
+        Key: attr.wrap({ projectId, code }),
         ReturnValues: "ALL_OLD",
         TableName: TableName,
     });
@@ -109,8 +121,8 @@ const deleteResource = async (id) => {
     return response.Attributes;
 };
 
-const getResourceById = async (id) => {
-    const getCommand = getItemCommand({ code: id });
+const getResourceById = async (projectId, code) => {
+    const getCommand = getItemCommand({ projectId, code });
     let response = await client.send(getCommand);
     return attr.unwrap(response.Item);
 };
