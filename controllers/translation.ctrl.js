@@ -2,14 +2,14 @@ const Joi = require('joi');
 const service = require('../dynamodb/translation.srv');
 
 const getAll = async (req, res) => {
-    const translations = await service.getAll(req.params.resourceId); 
+    const translations = await service.getAll(req.params.projectId, req.params.resourceId); 
     res.send(translations);
 }
 
 const create = async (req, res) => {
 
     try {
-        const resource = await service.create(req.params.resourceId, req.body); 
+        const resource = await service.create(req.params.projectId, req.params.resourceId, req.body); 
         res.send(resource);
     } catch (error) {
         console.error(error);
@@ -20,7 +20,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
 
     try {
-        const resource = await service.update(req.params.resourceId, req.params.id, req.body); 
+        const resource = await service.update(req.params.projectId, req.params.resourceId, req.params.id, req.body); 
         res.send(resource);
     } catch (error) {
         console.error(error);
@@ -31,7 +31,7 @@ const update = async (req, res) => {
 const remove = async (req, res) => {
 
     try {
-        const resource = await service.remove(req.params.resourceId, req.params.id); 
+        const resource = await service.remove(req.params.projectId, req.params.resourceId, req.params.id); 
         res.send(resource);
     } catch (error) {
         console.error(error);
@@ -42,7 +42,7 @@ const remove = async (req, res) => {
 const getById = async (req, res) => {
 
     try {
-        const translation = await service.getById(req.params.resourceId, req.params.id);
+        const translation = await service.getById(req.params.projectId, req.params.resourceId, req.params.id);
         res.send(translation);
     } catch (error) {
         console.error(error);

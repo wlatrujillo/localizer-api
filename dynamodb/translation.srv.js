@@ -14,22 +14,24 @@ const client = new DynamoDBClient({ region: "us-east-1" });
 
 const TableName = "localizer-resources";
 
-const getItemCommand = function ({ resourceId }) {
+const getItemCommand = function (key) {
     return new GetItemCommand({
         TableName: TableName,
-        Key: attr.wrap({ code: resourceId }),
+        Key: attr.wrap(key),
         ProjectionExpression: "translations",
     });
 };
 
-const getAll = async (resourceId) => {
-    const command = getItemCommand({ resourceId });
+const getAll = async (projectId, code) => {
+    const command = getItemCommand({ projectId, code });
     const response = await client.send(command);
     return attr.unwrap(response.Item).translations;
 };
 
-const create = async (resourceId, { locale, value }) => {
-    let command = getItemCommand({ resourceId });
+const create = async (projectId, code, { locale, value }) => {
+
+    const key = { projectId, code };
+    let command = getItemCommand(key);
     let response = await client.send(command);
 
     let translation = response.Item.translations.L.find(
@@ -51,11 +53,7 @@ const create = async (resourceId, { locale, value }) => {
     response.Item.translations.L.push(translation);
 
     command = new UpdateItemCommand({
-        Key: {
-            code: {
-                S: resourceId,
-            },
-        },
+        Key: attr.wrap(key),
         TableName: TableName,
         UpdateExpression: "set #T= :translations",
         ExpressionAttributeNames: {
@@ -72,8 +70,11 @@ const create = async (resourceId, { locale, value }) => {
     return response.Attributes;
 };
 
-const update = async (resourceId, locale, { value }) => {
-    let command = getItemCommand({ resourceId });
+const update = async (projectId, code, locale, { value }) => {
+
+    const key = { projectId, code };
+
+    let command = getItemCommand(key);
     let response = await client.send(command);
 
     if (!response.Item)
@@ -94,11 +95,7 @@ const update = async (resourceId, locale, { value }) => {
     response.Item.translations.L[translationIndex].M.value.S = value;
 
     command = new UpdateItemCommand({
-        Key: {
-            code: {
-                S: resourceId,
-            },
-        },
+        Key: attr.wrap(key),
         TableName: TableName,
         UpdateExpression: "set #T= :translations",
         ExpressionAttributeNames: {
@@ -115,8 +112,11 @@ const update = async (resourceId, locale, { value }) => {
     return response.Attributes;
 };
 
-const remove = async (resourceId, locale) => {
-    let command = getItemCommand({ resourceId });
+const remove = async (projectId, code, locale) => {
+
+    const key = { projectId, code };
+    let command = getItemCommand(key);
+
     let response = await client.send(command);
 
     if (!response.Item)
@@ -142,11 +142,7 @@ const remove = async (resourceId, locale) => {
     console.log(response.Item.translations.L);
 
     command = new UpdateItemCommand({
-        Key: {
-            code: {
-                S: resourceId,
-            },
-        },
+        Key: attr.wrap(key),
         TableName: TableName,
         UpdateExpression: "set #T= :translations",
         ExpressionAttributeNames: {
@@ -162,8 +158,9 @@ const remove = async (resourceId, locale) => {
     return deletedTranslation[0];
 };
 
-const getById = async (resourceId, locale) => {
-    let command = getItemCommand({ resourceId });
+const getById = async (projectId, code, locale) => {
+    const key = { projectId, code };
+    const command = getItemCommand(key);
     let response = await client.send(command);
 
     if (!response.Item)

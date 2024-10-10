@@ -13,8 +13,8 @@ module.exports = function(app) {
     app.use('/api/auth', authRoute);
     app.use('/api/users', auth, users);
     app.use('/api/locales', auth, locales);
+    app.use('/api/projects/:projectId/resources/:resourceId/translations', auth, translations);
     app.use('/api/projects/:projectId/resources', auth, resources);
     app.use('/api/projects', auth, projects);
-    app.use('/api', auth, translations);
 
 }

@@ -1,16 +1,12 @@
 const express = require('express');
-const router = express.Router();
-
+const router = express.Router({ mergeParams: true });
 const controller = require('../controllers/translation.ctrl');
 
-router.get('/resources/:resourceId/translations', controller.getAll);
+router.get('/:id', controller.getById);
+router.put('/:id', controller.update);
+router.delete('/:id', controller.remove);
 
-router.post('/resources/:resourceId/translations', controller.create);
-
-router.put('/resources/:resourceId/translations/:id', controller.update);
-
-router.delete('/resources/:resourceId/translations/:id', controller.remove);
-
-router.get('/resources/:resourceId/translations/:id', controller.getById);
+router.get('/', controller.getAll);
+router.post('/', controller.create);
 
 module.exports = router;
