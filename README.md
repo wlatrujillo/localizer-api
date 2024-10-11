@@ -42,5 +42,17 @@ JWT_PRIVATE_KEY=ThePrivateKeyForSignJWT
 AWS_PROFILE=wladi.trujillo
 ```
 
+## Create docker image
+
+```bash
+docker build -t localizer-api .
+```
+
+## Run docker container
+
+```bash
+docker run --name localizer-api -p 3000:3000 -d localizer-api
+```
+
 
 
