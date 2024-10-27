@@ -120,6 +120,7 @@ function generateAuthToken(_id, isAdmin) {
     const token = jwt.sign(
         { _id, isAdmin },
         process.env.JWT_PRIVATE_KEY,
+        { expiresIn: "8h"}
     );
     return token;
 }
