@@ -1,22 +1,21 @@
 const Joi = require('joi');
 const service = require('../dynamodb/auth.srv');
 
+const AUTH_TOKEN_HEADER = 'x-auth-token';
+
 const login = async (req, res) => {
-    console.log('login');
+    console.log('Start login service');
 
     try {
 
         const { error } = validate(req.body);
-        console.log('login ctrl validate error', error);
         if (error) return res.status(400).send(error.details[0].message);
 
-        console.log('login ctrl req.body', req.body);
         const token = await service.login(req.body);
 
-        console.log('login ctrl token from srv', token);
-        res.send(token);
+        res.header(AUTH_TOKEN_HEADER, token)
+            .send();
 
-        console.log('response sent');
 
     } catch (error) {
         console.error(error);
@@ -35,7 +34,7 @@ const signup = async (req, res) => {
 
         const response = await service.signup(req.body);
 
-        res.header('x-auth-token', response.token).send(response.data);
+        res.header(AUTH_TOKEN_HEADER, response.token).send(response.data);
 
     } catch (error) {
         console.error(error);
