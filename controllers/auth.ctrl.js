@@ -4,7 +4,7 @@ const service = require('../dynamodb/auth.srv');
 const AUTH_TOKEN_HEADER = 'x-auth-token';
 
 const login = async (req, res) => {
-    console.log('Start login service');
+    console.log('Start login ctrl');
 
     try {
 

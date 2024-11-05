@@ -16,7 +16,7 @@ const TableName = "localizer-users";
 
 const login = async (user) => {
 
-    console.log("login dynamodb srv", user);
+    console.log("login dynamodb srv");
 
     const input = {
         "ExpressionAttributeNames": {
@@ -38,7 +38,6 @@ const login = async (user) => {
     const command = new ScanCommand(input);
     const response = await client.send(command);
 
-    console.log("login dynamodb srv response", response);
 
     if (!response.Items || response.Items.length === 0)
         throw new ServiceException("Invalid email or password.", 400);
@@ -46,14 +45,12 @@ const login = async (user) => {
 
     const userResource = response.Items[0];
 
-    console.log("login dynamodb srv userResource", userResource);
 
     const validPassword = await bcrypt.compare(
         user.password,
         userResource.password.S,
     );
 
-    console.log("login dynamodb srv validPassword", validPassword);
 
     if (!validPassword)
         throw new ServiceException("Invalid email or password.", 400);
@@ -61,7 +58,6 @@ const login = async (user) => {
 
     const token = generateAuthToken(userResource._id.S, userResource.isAdmin.BOOL);
 
-    console.log("login dynamodb srv token", token);
 
     return token;
 };
