@@ -73,6 +73,8 @@ const createProject = async (project) => {
         Item: attr.wrap({
             _id: generatedId,
             name: project.name,
+            baseLocale: project.baseLocale,
+            locales: project.locales,
             description: project.description,
         }),
         ReturnValues: "ALL_OLD",
@@ -84,22 +86,31 @@ const createProject = async (project) => {
 };
 
 const updateProject = async (_id, project) => {
+    console.log("Starting updateProject...", { _id, project });
     const getCommand = getItemCommand({ _id });
     let response = await client.send(getCommand);
 
     if (!response.Item) throw new ServiceException("Project not found.", 404);
 
+    console.log("Project locales", attr.wrap(project.locales));
+
+    const locales = project.locales ? project.locales.map(locale => ({"M" : attr.wrap(locale)}) ) : null;
+
     const command = new UpdateItemCommand({
         Key: attr.wrap({ _id }),
         TableName: TableName,
-        UpdateExpression: "set #name = :name, #description = :description",
+        UpdateExpression: "set #name = :name, #description = :description, #baseLocale = :baseLocale, #locales = :locales",
         ExpressionAttributeNames: {
             "#name": "name",
             "#description": "description",
+            "#baseLocale": "baseLocale",
+            "#locales": "locales",
         },
         ExpressionAttributeValues: {
             ":name": { S: project.name || response.Item.name.S },
             ":description": { S: project.description || response.Item.description.S },
+            ":baseLocale": { S: project.baseLocale || response.Item.baseLocale.S },
+            ":locales": { L: locales || response.Item.locales.L},
         },
         ReturnValues: "ALL_NEW",
     });

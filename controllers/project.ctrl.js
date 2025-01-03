@@ -28,8 +28,8 @@ const updateProject = async (req, res) => {
 
         if (!project)
             return res
-                .status(404)
-                .send("The project with the given ID was not found.");
+            .status(404)
+            .send("The project with the given ID was not found.");
 
         res.send(project);
     } catch (error) {
@@ -57,7 +57,13 @@ const getProjectById = async (req, res) => {
 function validate(project) {
     const schema = Joi.object({
         name: Joi.string().min(3).max(50).required(),
-        description: Joi.string().max(820),
+        baseLocale: Joi.string().min(2).max(5).required(),
+        locales: Joi.array().items(
+            Joi.object({
+                code: Joi.string().min(2).max(5).required(), 
+                name: Joi.string().min(3).max(50).required()
+            })).required(),
+            description: Joi.string().max(820),
     });
 
     return schema.validate(project);
