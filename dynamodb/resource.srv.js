@@ -91,6 +91,8 @@ const createResource = async (projectId, { code, value }) => {
 
     response = await client.send(command);
 
+    newResource.translations = JSON.parse(newResource.translations);
+
     return newResource;
 };
 
