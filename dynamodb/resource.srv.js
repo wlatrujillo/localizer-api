@@ -1,4 +1,5 @@
 const ServiceException = require("../exceptions/service.exception");
+const ProjectService = require("./project.srv");
 const attr = require("dynamodb-data-types").AttributeValue;
 const {
     DynamoDBClient,
@@ -26,41 +27,60 @@ const getAllResources = async (projectId, { page, pageSize, q }) => {
 
     if (!projectId) throw new ServiceException("ProjectId is required", 400);
 
-    const command = new ScanCommand({
-        "ExpressionAttributeValues": {
-            ":projectId": {
-                "S": projectId
-            }
+    if(!q) { q = ""}
+
+    const params = {
+      "TableName": TableName, // Replace with your table name
+      "FilterExpression": "#projectId = :projectIdValue and (contains(#translations, :translationValue) or contains(#code, :codeValue))",
+      "ExpressionAttributeNames": {
+        "#projectId": "projectId",
+        "#code": "code",
+        "#translations": "translations",
+      },
+      "ExpressionAttributeValues": {
+        ":projectIdValue": {
+            "S": projectId
         },
-        "FilterExpression": "projectId = :projectId",
-        "TableName": TableName,
-    });
+        ":codeValue": {
+            "S": q
+        },
+        ":translationValue": {
+            "S": q
+        }
+      }
+    };
+
+    const command = new ScanCommand(params);
 
     const response = await client.send(command);
-    return response.Items.map((item) => attr.unwrap(item));
+    console.log("response", response.Items);
+    return response.Items
+                    .map((item) => {
+                        item.translations.S = JSON.parse(item.translations.S);
+                        return attr.unwrap(item)
+                    });
 };
 
 const createResource = async (projectId, { code, value }) => {
-    console.log("projectId", projectId);
-    console.log("code", code);
-    console.log("value", value);
+
+    const project = await ProjectService.getProjectById(projectId);
+    console.log(project);
+    if (!project._id) throw new ServiceException("Project not found", 404);
+
     const getCommand = getItemCommand({ projectId, code });
     let response = await client.send(getCommand);
     if (response.Item) throw new ServiceException("Resource already exists", 409);
-
-    // TODO: insert all translations
-    const translation = {
-        locale: "es",
-        value: value,
-    };
-
+    
     let translations = [];
-    translations.push(translation);
+
+    project.locales.forEach((locale) => {
+        translations.push({locale: locale.code, value: value});
+    });
 
     const newResource = {
         projectId: projectId,
         code: code,
-        translations: translations,
+        translations: JSON.stringify(translations),
     };
 
     const command = new PutItemCommand({
@@ -124,6 +144,11 @@ const deleteResource = async (projectId, code) => {
 const getResourceById = async (projectId, code) => {
     const getCommand = getItemCommand({ projectId, code });
     let response = await client.send(getCommand);
+
+    if (!response.Item) throw new ServiceException("Resource not found.", 404);
+
+    response.Item.translations.S = JSON.parse(response.Item.translations.S);
+
     return attr.unwrap(response.Item);
 };
 

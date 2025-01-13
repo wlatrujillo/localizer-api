@@ -25,7 +25,7 @@ const getItemCommand = function (key) {
 const getAll = async (projectId, code) => {
     const command = getItemCommand({ projectId, code });
     const response = await client.send(command);
-    return attr.unwrap(response.Item).translations;
+    return JSON.parse(attr.unwrap(response.Item).translations);
 };
 
 const create = async (projectId, code, { locale, value }) => {
@@ -34,23 +34,19 @@ const create = async (projectId, code, { locale, value }) => {
     let command = getItemCommand(key);
     let response = await client.send(command);
 
-    let translation = response.Item.translations.L.find(
-        (t) => t.M.locale.S == locale,
+    let translations = JSON.parse(response.Item.translations.S);
+
+    let translation = translations.S.find(
+        (t) => t.locale == locale,
     );
+
     if (translation)
         throw new ServiceException(
             `Translation with the given locale already exists.`,
             400,
         );
 
-    translation = {
-        M: {
-            locale: { S: locale },
-            value: { S: value },
-        },
-    };
-
-    response.Item.translations.L.push(translation);
+    translations.push({ locale, value });
 
     command = new UpdateItemCommand({
         Key: attr.wrap(key),
@@ -60,7 +56,7 @@ const create = async (projectId, code, { locale, value }) => {
             "#T": "translations",
         },
         ExpressionAttributeValues: {
-            ":translations": response.Item.translations,
+            ":translations": {"S": JSON.stringify(translations)},
         },
         ReturnValues: "ALL_NEW",
     });
@@ -83,8 +79,10 @@ const update = async (projectId, code, locale, { value }) => {
             404,
         );
 
-    const translationIndex = response.Item.translations.L.findIndex(
-        (t) => t.M.locale.S == locale,
+    let translations = JSON.parse(response.Item.translations.S);
+
+    const translationIndex = translations.findIndex(
+        (t) => t.locale == locale,
     );
     if (translationIndex === -1)
         throw new ServiceException(
@@ -92,7 +90,7 @@ const update = async (projectId, code, locale, { value }) => {
             404,
         );
 
-    response.Item.translations.L[translationIndex].M.value.S = value;
+    translations[translationIndex].value = value;
 
     command = new UpdateItemCommand({
         Key: attr.wrap(key),
@@ -102,7 +100,7 @@ const update = async (projectId, code, locale, { value }) => {
             "#T": "translations",
         },
         ExpressionAttributeValues: {
-            ":translations": response.Item.translations,
+            ":translations": {"S": JSON.stringify(translations)},
         },
         ReturnValues: "ALL_NEW",
     });
@@ -169,9 +167,10 @@ const getById = async (projectId, code, locale) => {
             404,
         );
 
-    const translation = attr
-        .unwrap(response.Item)
-        .translations.find((t) => t.locale == locale);
+   let translations = JSON.parse(response.Item.translations.S);
+
+    const translation = translations.find((t) => t.locale == locale);
+
     if (!translation)
         throw new ServiceException(
             "The translation with the given ID was not found.",
